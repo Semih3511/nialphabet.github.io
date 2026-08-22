@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Ni-Alphabet</title>
+  <style>
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      background: linear-gradient(135deg, #fdfbfb 0%, #ebedee 100%);
+      font: 16px/1.5 system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, "Noto Sans", "Helvetica Neue", Arial;
+      color: #333;
+    }
+
+    header {
+      padding: 28px 20px 10px;
+      text-align: center;
+    }
+
+    header h1 {
+      margin: 0;
+      font-size: clamp(22px, 3vw, 32px);
+      font-weight: 800;
+    }
+
+    header p {
+      margin: 6px auto 0;
+      max-width: 780px;
+      color: #666;
+    }
+
+    .wrap {
+      max-width: 1100px;
+      margin: 18px auto 36px;
+      padding: 0 16px;
+    }
+
+    .grid {
+      display: grid;
+      gap: 14px;
+      grid-template-columns: 1fr;
+    }
+
+    @media (min-width: 920px) {
+      .grid { grid-template-columns: 1fr 1fr; }
+    }
+
+    .card {
+      background: #ffffffcc;
+      border: 1px solid rgba(0,0,0,0.05);
+      border-radius: 18px;
+      box-shadow: 0 12px 30px rgba(0,0,0,.08);
+    }
+
+    .pad { padding: 14px; }
+
+    .area {
+      width: 100%;
+      min-height: 260px;
+      resize: vertical;
+      background: #fafafa;
+      color: #333;
+      border: 1px solid rgba(0,0,0,.1);
+      border-radius: 14px;
+      padding: 14px 14px 44px;
+      font: 15px/1.5 ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+    }
+
+    .area:focus {
+      outline: none;
+      border-color: #a0d2eb;
+    }
+
+    .toolbar {
+      display: flex;
+      gap: 8px;
+      margin-top: 10px;
+      flex-wrap: wrap;
+    }
+
+    button {
+      appearance: none;
+      border: 1px solid rgba(0,0,0,0.15);
+      padding: 10px 14px;
+      border-radius: 12px;
+      cursor: pointer;
+      font-weight: 650;
+    }
+
+    button:hover {
+      opacity: 0.9;
+    }
+
+    #toSymbols, #copy {
+      background-color: #f8f9fa;
+      color: #333;
+    }
+
+    #toLetters {
+      background-color: #b3e5fc;
+      color: #333;
+    }
+
+    #clear {
+      background-color: #ffe4e1;
+      color: #333;
+    }
+
+    .row {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 10px;
+      border-radius: 999px;
+      border: 1px solid rgba(0,0,0,0.1);
+      background: #fff;
+      font-size: 12px;
+    }
+
+    .small {
+      font-size: 12px;
+      color: #555;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Welcome!</h1>
+    <p>
+      Enjoy Ni-Alphabet love~ hehehe =3
+    </p>
+  </header>
+
+  <div class="wrap">
+    <div class="grid">
+      <section class="card pad">
+        <div class="row">
+          <h2 class="small">Input</h2>
+          <span class="pill" id="countIn">0 characters</span>
+        </div>
+
+        <textarea
+          id="input"
+          class="area"
+          placeholder="Type here!"
+        ></textarea>
+
+        <div class="toolbar">
+          <button class="primary" id="toSymbols">Convert</button>
+          <button class="accent2" id="toLetters">Convert Back</button>
+          <button class="ghost" id="clear">Clear</button>
+          <button id="copy" class="primary">Copy</button>
+        </div>
+      </section>
+
+      <section class="card pad">
+        <div class="row">
+          <h2 class="small">Output</h2>
+          <span class="pill" id="countOut">0 characters</span>
+        </div>
+
+        <textarea
+          id="output"
+          class="area"
+          placeholder="The result will appear here!"
+          readonly
+        ></textarea>
+      </section>
+    </div>
+  </div>
+
+  <script>
+const MAP = {
+  "A": "∞", "B": "★", "C": "♡", "Ç": "⌬", "D": "✡", "E": "𖦹", "F": "❖", "G": "⨂", "Ğ": "𖣘", "H": "✩",
+  "I": "⨊", "İ": "⌔", "J": "✮", "K": "⊙", "L": "✪", "M": "☾", "N": "⸘", "O": "֍", "Ö": "⍟", "P": "⚬",
+  "Q": "⟡", "R": "♢", "S": "☯", "Ş": "✵", "T": "✦", "U": "✰", "Ü": "☮", "V": "‡", "W": "❈", "X": "◇",
+  "Y": "𖤐", "Z": "✯"
+};
+
+    const REVERSE = Object.fromEntries(
+      Object.entries(MAP).map(([k, v]) => [v, k])
+    );
+
+    const elIn = document.getElementById('input');
+    const elOut = document.getElementById('output');
+    const btnToSymbols = document.getElementById('toSymbols');
+    const btnToLetters = document.getElementById('toLetters');
+    const btnCopy = document.getElementById('copy');
+    const btnClear = document.getElementById('clear');
+    const countIn = document.getElementById('countIn');
+    const countOut = document.getElementById('countOut');
+
+    const tr = 'tr-TR';
+
+    function updateCounts() {
+      countIn.textContent = `${elIn.value.length} characters`;
+      countOut.textContent = `${elOut.value.length} characters`;
+    }
+
+    function toSymbols(text) {
+      let out = '';
+
+      for (const ch of text) {
+        const upper = ch.toLocaleUpperCase(tr);
+        out += MAP[upper] ?? ch;
+      }
+
+      return out;
+    }
+
+    function toLettersRaw(text) {
+      let out = '';
+
+      for (const ch of text) {
+        if (REVERSE[ch]) {
+          out += REVERSE[ch].toLocaleLowerCase(tr);
+        } else {
+          out += ch;
+        }
+      }
+
+      return out;
+    }
+
+    function titleCaseTR(text) {
+      return text.replace(/\p{L}+/gu, (word) => {
+        const first = word.slice(0, 1).toLocaleUpperCase(tr);
+        const rest = word.slice(1).toLocaleLowerCase(tr);
+
+        return first + rest;
+      });
+    }
+
+    btnToSymbols.addEventListener('click', () => {
+      elOut.value = toSymbols(elIn.value);
+      updateCounts();
+    });
+
+    btnToLetters.addEventListener('click', () => {
+      const raw = toLettersRaw(elIn.value);
+      elOut.value = titleCaseTR(raw);
+      updateCounts();
+    });
+
+    btnCopy.addEventListener('click', async () => {
+      try {
+        await navigator.clipboard.writeText(elOut.value);
+        btnCopy.textContent = '✓ Copied';
+
+        setTimeout(() => {
+          btnCopy.textContent = 'Copy This Text';
+        }, 1200);
+      } catch (e) {
+        elOut.select();
+        document.execCommand('copy');
+      }
+    });
+
+    btnClear.addEventListener('click', () => {
+      elIn.value = '';
+      elOut.value = '';
+      updateCounts();
+      elIn.focus();
+    });
+
+    elIn.addEventListener('input', updateCounts);
+    updateCounts();
+  </script>
+</body>
+</html>
